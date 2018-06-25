@@ -1,0 +1,37 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 31 10:10:42 2018
+
+@author: rmarino
+"""
+##improting
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.io import fits
+##opening .fits files
+hdulist = fits.open('HD106906_model.fits')
+hdulist.info()
+##getting relevant stuff out of .fits file
+hdu = hdulist[0]
+image_data = hdulist[0].data
+#print(type(image_data))
+#print(np.sum(image_data))
+#print(image_data.shape)
+print(hdu.header)
+hdulist.close()
+##fixing flux
+newimagedata=image_data*(2.988533474*1000)
+##plottingstuffs
+ig, ax = plt.subplots(figsize=(6, 4))
+plt.imshow(newimagedata, vmin=0, vmax=.1, extent=[(-133.64),133.64,(-133.64),133.64],cmap='afmhot', origin ='lower')
+cbar=plt.colorbar(pad=0.02)
+plt.xlabel(r'$\Delta \alpha$'   '(au)',fontsize=15)
+plt.ylabel(r'$\Delta \delta$'  '(au)',fontsize=15)
+cbar.set_label(r'$\mu$' 'Jy / pix',fontsize=15)
+##checking flux
+sum= np.sum(image_data)
+print(sum)
+#newid=3*((image_data*3)/(3.01151))
+newsum=np.sum(newimagedata)
+print(newsum)

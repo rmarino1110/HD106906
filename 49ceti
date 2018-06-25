@@ -1,0 +1,59 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun 19 13:40:40 2018
+
+@author: rmarino
+"""
+##importing relevant stuff
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.io import fits
+import math
+
+##opening the .fits file to see what it contains
+hdulist = fits.open('/Network/Servers/vimes.astro.wesleyan.edu/Volumes/users/rmarino/Desktop/HD106906/49cet_3.fits')
+hdulist.info()
+##defining so I can look at the header
+hdu = hdulist[0]
+print(hdu.header)
+##taking off the un-needed dimensions in the nparray
+image_data = np.squeeze(hdulist[0].data)*1000
+##closing because we got everything we need 
+hdulist.close()
+#checking max and min
+print(np.amax(image_data))
+print(np.min(image_data))
+##defining stuff
+crval1=hdu.header['CRVAL1']*3600
+crval2=hdu.header['CRVAL2']*3600
+crdelt1=hdu.header['CDELT1']*3600
+crdelt2=hdu.header['CDELT2']*3600
+pix1=hdu.header['NAXIS1']
+pix2=hdu.header['NAXIS2']
+pixs1=pix1*crdelt1
+pixs2=pix2*crdelt2
+##plotting stuff and annotations
+fig, ax = plt.subplots(figsize=(8, 6))
+plt.imshow(image_data, vmin=np.amin(image_data), vmax=np.amax(image_data),extent=[(.5*pixs1),-(.5*pixs1),-(.5*pixs2),(.5*pixs2)],cmap='afmhot',origin ='lower')
+plt.xlabel(r'$\Delta \alpha$'   '["]',fontsize=15)
+plt.ylabel(r'$\Delta \delta$'  '["]',fontsize=15)
+ax.annotate('49 Ceti',xy=(-7, 7), xycoords='data',xytext=(-20, 20), textcoords='offset pixels',horizontalalignment='left',verticalalignment='top',color='white',fontsize=15)
+ax.annotate('$\lambda$'"=860 microns",xy=(-7, 6.3), xycoords='data',xytext=(-20, 20), textcoords='offset pixels',horizontalalignment='left',verticalalignment='top',color='white',fontsize=15)
+ax.annotate('ALMA',xy=(-7, 5.6), xycoords='data',xytext=(-20, 20), textcoords='offset pixels',horizontalalignment='left',verticalalignment='top',color='white',fontsize=15)
+ax.annotate('200 au',xy=(4, -8), xycoords='data',xytext=(-20, 20), textcoords='offset pixels',horizontalalignment='left',verticalalignment='top',color='white',fontsize=15)
+##beamcode
+xoff=-7
+yoff=-7
+t=np.arange(0.0,2.0 *math.pi,0.05)
+x=hdu.header['bmaj']*1800.0*np.cos(t)*np.cos((hdu.header['bpa']+90.0)*math.pi/180.0)-1800.0*hdu.header['bmin']*np.sin(t)*np.sin((hdu.header['bpa']+90.0)*math.pi/180.0)+xoff
+y=1800.0*hdu.header['bmaj']*np.cos(t)*np.sin((hdu.header['bpa']+90.0)*math.pi/180.0)+1800.0*hdu.header['bmin']*np.sin(t)*np.cos((hdu.header['bpa']+90.0)*math.pi/180.0)+yoff
+plt.fill(x,y,fill=False,hatch='//////',color='white')
+#scalebar length 4" located at -7
+plt.plot([3,6.37], [-6.7,-6.7], color="white") 
+##colorbar
+cbar=plt.colorbar(pad=0)
+cbar.set_label( 'mJy / beam',fontsize=15)
+
+
+
